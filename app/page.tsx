@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Search, MapPin, Music2, Users, CalendarDays } from "lucide-react"
 
 const featuredEvents = [
@@ -72,12 +73,16 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/5">
-              Sign In
-            </button>
-            <button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]">
-              Join Now
-            </button>
+            <Link href="/login">
+              <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/5">
+                Sign In
+              </button>
+            </Link>
+            <Link href="/signup">
+              <button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]">
+                Join Now
+              </button>
+            </Link> 
           </div>
         </div>
       </header>
