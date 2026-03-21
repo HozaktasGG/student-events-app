@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Search, MapPin, Music2, Users, CalendarDays } from "lucide-react"
 
@@ -46,6 +47,27 @@ const featuredEvents = [
 ]
 
 export default function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userName, setUserName] = useState("")
+
+  useEffect(() => {
+    const savedLogin = localStorage.getItem("isLoggedIn")
+    const savedName = localStorage.getItem("userName")
+
+    if (savedLogin === "true") {
+      setIsLoggedIn(true)
+      setUserName(savedName || "Profile")
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn")
+    localStorage.removeItem("userName")
+    localStorage.removeItem("userEmail")
+    setIsLoggedIn(false)
+    setUserName("")
+  }
+
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-xl">
@@ -73,16 +95,33 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link href="/login">
-              <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/5">
-                Sign In
-              </button>
-            </Link>
-            <Link href="/signup">
-              <button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]">
-                Join Now
-              </button>
-            </Link> 
+            {isLoggedIn ? (
+              <>
+                <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90">
+                  {userName || "Profile"}
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/5">
+                    Sign In
+                  </button>
+                </Link>
+                <Link href="/signup">
+                  <button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]">
+                    Join Now
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

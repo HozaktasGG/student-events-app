@@ -1,9 +1,13 @@
 "use client"
 
+import { supabase } from "@/lib/supabase"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 export default function SignupPage() {
+  const router = useRouter()
+
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -14,10 +18,10 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isAdultConfirmed, setIsAdultConfirmed] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const emailsMatch = email.trim() !== "" && email.trim() === confirmEmail.trim()
-  const passwordsMatch =
-    password.trim() !== "" && password === confirmPassword
+  const passwordsMatch = password.trim() !== "" && password === confirmPassword
 
   const ageNumber = Number(age)
   const isAgeValid = age !== "" && !Number.isNaN(ageNumber) && ageNumber >= 18
@@ -34,13 +38,37 @@ export default function SignupPage() {
     passwordsMatch &&
     isAdultConfirmed
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitted(true)
 
     if (!isFormValid) return
 
-    alert("Account created successfully!")
+    setLoading(true)
+
+    const { error } = await supabase.from("users").insert([
+      {
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        age: Number(age),
+      },
+    ])
+
+    setLoading(false)
+
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    localStorage.setItem("isLoggedIn", "true")
+    localStorage.setItem("userEmail", email)
+    localStorage.setItem("userName", firstName)
+
+    router.push("/")
   }
 
   return (
@@ -184,9 +212,10 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.01]"
+              disabled={loading}
+              className="w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.01] disabled:opacity-60"
             >
-              Join Now
+              {loading ? "Creating account..." : "Join Now"}
             </button>
           </form>
 
