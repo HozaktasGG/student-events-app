@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Search, MapPin, Music2, Users, CalendarDays } from "lucide-react"
+import {
+  CalendarDays,
+  MapPin,
+  Plus,
+  Search,
+  Settings,
+  User,
+  Users,
+  LogOut,
+} from "lucide-react"
 
 const featuredEvents = [
   {
@@ -66,156 +75,261 @@ export default function HomePage() {
     localStorage.removeItem("userEmail")
     setIsLoggedIn(false)
     setUserName("")
+    window.location.href = "/login"
   }
 
-  return (
-    <main className="min-h-screen bg-neutral-950 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-black font-bold">
-              E
+  if (!isLoggedIn) {
+    return (
+      <main className="relative min-h-screen overflow-hidden text-white">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source src="/videos/background-vid.mp4" type="video/mp4" />
+        </video>
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/70" />
+
+        <header className="relative z-10 sticky top-0 border-b border-white/10 bg-black/20 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white font-bold text-black">
+                E
+              </div>
+              <div>
+                <p className="text-lg font-semibold tracking-tight">Eventra</p>
+                <p className="text-xs text-white/70">
+                  Student nightlife discovery
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-lg font-semibold tracking-tight">Eventra</p>
-              <p className="text-xs text-white/50">Student nightlife discovery</p>
+
+            <div className="flex items-center gap-3">
+              <Link href="/login">
+                <button className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white/90 transition hover:border-white/40 hover:bg-white/10">
+                  Sign In
+                </button>
+              </Link>
+              <Link href="/signup">
+                <button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]">
+                  Join Now
+                </button>
+              </Link>
             </div>
           </div>
+        </header>
 
-          <nav className="hidden items-center gap-8 md:flex">
-            <a href="#discover" className="text-sm text-white/80 transition hover:text-white">
-              Discover
-            </a>
-            <a href="#categories" className="text-sm text-white/80 transition hover:text-white">
-              Categories
-            </a>
-            <a href="#featured" className="text-sm text-white/80 transition hover:text-white">
-              Featured Events
-            </a>
-          </nav>
+        <section className="relative z-10 flex min-h-[calc(100vh-73px)] items-center">
+          <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+            <div className="max-w-3xl">
+              <div className="mb-6 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/90 backdrop-blur-md">
+                Find the best student parties in your city
+              </div>
 
-          <div className="flex items-center gap-3">
-            {isLoggedIn ? (
-              <>
-                <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90">
-                  {userName || "Profile"}
-                </button>
+              <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
+                Discover events that match your vibe.
+              </h1>
 
-                <button
-                  onClick={handleLogout}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]"
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/80">
+                Explore house parties, club nights, Erasmus meetups, and
+                genre-based events built for students who want more than a
+                boring event list.
+              </p>
+
+              <div className="mt-8 flex gap-3">
                 <Link href="/login">
-                  <button className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/5">
+                  <button className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black">
                     Sign In
                   </button>
                 </Link>
                 <Link href="/signup">
-                  <button className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:scale-[1.02]">
-                    Join Now
+                  <button className="rounded-full border border-white/20 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+                    Create Account
                   </button>
                 </Link>
-              </>
-            )}
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    )
+  }
+
+  return (
+    <main className="min-h-screen bg-neutral-950 text-white">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+          <div className="flex items-center gap-10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white font-bold text-black">
+                E
+              </div>
+              <div>
+                <p className="text-lg font-semibold tracking-tight">Eventra</p>
+                <p className="text-xs text-white/50">Your event dashboard</p>
+              </div>
+            </div>
+
+            <nav className="hidden items-center gap-6 md:flex">
+              <a
+                href="#events"
+                className="text-sm text-white/75 transition hover:text-white"
+              >
+                Events
+              </a>
+              <Link
+                href="/profile"
+                className="text-sm text-white/75 transition hover:text-white"
+              >
+                Profile
+              </Link>
+              <Link
+                href="/settings"
+                className="text-sm text-white/75 transition hover:text-white"
+              >
+                Settings
+              </Link>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link href="/create-event">
+              <button className="hidden items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-black md:flex">
+                <Plus size={16} />
+                Create Event
+              </button>
+            </Link>
+
+            <Link href="/profile">
+              <button className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10">
+                <User size={16} />
+                {userName || "Profile"}
+              </button>
+            </Link>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 rounded-full border border-red-400/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/20"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
           </div>
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_35%)]" />
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:px-8 lg:py-28">
-          <div className="relative z-10 max-w-2xl">
-            <div className="mb-6 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
-              Find the best student parties in your city
-            </div>
-            <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
-              Discover events that match your vibe.
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-white/65">
-              Explore house parties, club nights, Erasmus meetups, and genre-based events built for students who want more than a boring event list.
-            </p>
+      <section className="mx-auto grid max-w-7xl gap-6 px-6 py-8 lg:grid-cols-[1.4fr_0.8fr] lg:px-8">
+        <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8">
+          <p className="text-sm uppercase tracking-[0.22em] text-white/45">
+            Welcome back
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
+            Hi {userName || "there"}, discover and manage your events.
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-white/65">
+            Buradan eventlerini görüntüleyebilir, yeni event oluşturabilir ve
+            profil bilgilerine ulaşabilirsin.
+          </p>
 
-            <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/60">
-              <span className="rounded-full border border-white/10 px-4 py-2">Afro House</span>
-              <span className="rounded-full border border-white/10 px-4 py-2">Techno</span>
-              <span className="rounded-full border border-white/10 px-4 py-2">House Party</span>
-              <span className="rounded-full border border-white/10 px-4 py-2">Erasmus Meetup</span>
-            </div>
-          </div>
-
-          <div className="relative z-10">
-            <div className="overflow-hidden rounded-[32px] border border-white/10 bg-white/5 p-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
-              <div className="h-[440px] rounded-[26px] bg-[url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center" />
-            </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/create-event">
+              <button className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition hover:scale-[1.01]">
+                Create New Event
+              </button>
+            </Link>
+            <Link href="/profile">
+              <button className="rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/5">
+                Go to Profile
+              </button>
+            </Link>
           </div>
         </div>
+
+        <aside className="rounded-[32px] border border-white/10 bg-white/5 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white/50">Quick access</p>
+              <h2 className="mt-1 text-2xl font-semibold">Your account</h2>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-black">
+              <User size={20} />
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-3">
+            <Link
+              href="/profile"
+              className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10"
+            >
+              <span className="flex items-center gap-3">
+                <User size={16} />
+                My Profile
+              </span>
+              <span>→</span>
+            </Link>
+
+            <Link
+              href="/settings"
+              className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10"
+            >
+              <span className="flex items-center gap-3">
+                <Settings size={16} />
+                Settings
+              </span>
+              <span>→</span>
+            </Link>
+
+            <Link
+              href="/create-event"
+              className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/80 transition hover:bg-white/10"
+            >
+              <span className="flex items-center gap-3">
+                <Plus size={16} />
+                Create Event
+              </span>
+              <span>→</span>
+            </Link>
+          </div>
+        </aside>
       </section>
 
-      <section id="discover" className="mx-auto max-w-7xl px-6 pb-10 lg:px-8">
-        <div className="grid gap-4 rounded-[32px] border border-white/10 bg-white/5 p-4 backdrop-blur-xl md:grid-cols-2 xl:grid-cols-5">
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
+      <section className="mx-auto max-w-7xl px-6 pb-6 lg:px-8">
+        <div className="grid gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 md:grid-cols-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4 md:col-span-3">
             <Search className="h-5 w-5 text-white/40" />
             <input
               placeholder="Search events"
               className="w-full bg-transparent text-sm outline-none placeholder:text-white/35"
             />
           </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
-            <MapPin className="h-5 w-5 text-white/40" />
-            <span className="text-sm text-white/75">City</span>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
-            <Music2 className="h-5 w-5 text-white/40" />
-            <span className="text-sm text-white/75">Music Genre</span>
-          </div>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
-            <Users className="h-5 w-5 text-white/40" />
-            <span className="text-sm text-white/75">Party Type</span>
-          </div>
           <button className="rounded-2xl bg-white px-5 py-4 text-sm font-semibold text-black transition hover:scale-[1.01]">
-            Search Now
+            Search
           </button>
         </div>
       </section>
 
-      <section id="categories" className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+      <section
+        id="events"
+        className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:pb-20"
+      >
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-white/40">Browse by category</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight">What are you looking for tonight?</h2>
+            <p className="text-sm uppercase tracking-[0.22em] text-white/40">
+              Your homepage events
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+              Popular this week
+            </h2>
           </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            "House Parties",
-            "Club Events",
-            "Erasmus Meetups",
-            "Rooftop Nights",
-          ].map((item) => (
-            <div
-              key={item}
-              className="rounded-[28px] border border-white/10 bg-white/5 p-6 transition hover:-translate-y-1 hover:bg-white/[0.07]"
-            >
-              <div className="mb-10 h-12 w-12 rounded-2xl bg-white/10" />
-              <h3 className="text-xl font-semibold">{item}</h3>
-              <p className="mt-2 text-sm leading-6 text-white/55">
-                Discover curated student events with a cleaner, more social experience.
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="featured" className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:pb-20">
-        <div className="mb-6">
-          <p className="text-sm uppercase tracking-[0.24em] text-white/40">Featured events</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight">Popular this week</h2>
+          <Link
+            href="/events"
+            className="text-sm text-white/65 underline underline-offset-4"
+          >
+            View all
+          </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -229,9 +343,6 @@ export default function HomePage() {
                 style={{ backgroundImage: `url(${event.image})` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <button className="absolute right-4 top-4 rounded-full border border-white/20 bg-black/35 px-3 py-1 text-xs font-medium text-white backdrop-blur-md transition hover:bg-black/50">
-                  Save
-                </button>
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
                   <div>
                     <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/70">
@@ -246,6 +357,7 @@ export default function HomePage() {
                   </span>
                 </div>
               </div>
+
               <div className="p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/65">
@@ -268,23 +380,22 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                  <div className="flex -space-x-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-neutral-950 bg-white/90 text-xs font-semibold text-black">
-                      A
-                    </div>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-neutral-950 bg-white/80 text-xs font-semibold text-black">
-                      M
-                    </div>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-neutral-950 bg-white/70 text-xs font-semibold text-black">
-                      L
-                    </div>
+                  <div className="flex items-center gap-2 text-sm text-white/70">
+                    <Users className="h-4 w-4" />
+                    <span>{event.attendees} people going</span>
                   </div>
-                  <p className="text-sm text-white/70">{event.attendees} people going</p>
                 </div>
 
-                <button className="mt-6 w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.01]">
-                  View Event
-                </button>
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <Link href={`/events/${event.id}`}>
+                    <button className="w-full rounded-2xl border border-white/15 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/5">
+                      View Event
+                    </button>
+                  </Link>
+                  <button className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.01]">
+                    Join Event
+                  </button>
+                </div>
               </div>
             </article>
           ))}
