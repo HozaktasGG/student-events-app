@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { CheckCircle2 } from "lucide-react"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -19,13 +20,13 @@ export default function SignupPage() {
   const [isAdultConfirmed, setIsAdultConfirmed] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const emailsMatch = email.trim() !== "" && email.trim() === confirmEmail.trim()
   const passwordsMatch = password.trim() !== "" && password === confirmPassword
-
   const ageNumber = Number(age)
   const isAgeValid = age !== "" && !Number.isNaN(ageNumber) && ageNumber >= 18
-
   const phoneIsValid = /^[+()\d\s-]{7,}$/.test(phone.trim())
 
   const isFormValid =
@@ -41,34 +42,73 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitted(true)
+    setError(null)
 
     if (!isFormValid) return
 
     setLoading(true)
 
-    const { error } = await supabase.from("users").insert([
-      {
-        email,
-        password,
-        first_name: firstName,
-        last_name: lastName,
-        phone,
-        age: Number(age),
+    // Supabase Auth ile kayıt (profil bilgileri user_metadata'ya gidiyor)
+    // Trigger bu bilgileri otomatik olarak profiles tablosuna yazacak
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          phone: phone.trim(),
+          age: age,
+        },
+        emailRedirectTo:
+          typeof window !== "undefined" ? `${window.location.origin}/login` : undefined,
       },
-    ])
+    })
 
     setLoading(false)
 
-    if (error) {
-      alert(error.message)
+    if (signUpError) {
+      setError(signUpError.message)
       return
     }
 
-    localStorage.setItem("isLoggedIn", "true")
-    localStorage.setItem("userEmail", email)
-    localStorage.setItem("userName", firstName)
+    setSuccess(true)
+  }
 
-    router.push("/")
+  // Başarılı kayıt sonrası ekran
+  if (success) {
+    return (
+      <main className="min-h-screen bg-neutral-950 px-6 py-12 text-white flex items-center justify-center">
+        <div className="w-full max-w-lg">
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-8 text-center backdrop-blur-xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+              <CheckCircle2 className="h-8 w-8 text-green-400" />
+            </div>
+
+            <h1 className="mt-6 text-2xl font-semibold tracking-tight">
+              Check your email
+            </h1>
+
+            <p className="mt-3 text-sm text-white/60">
+              We sent a confirmation link to{" "}
+              <span className="font-medium text-white">{email}</span>.
+              <br />
+              Click the link to activate your account, then come back and sign in.
+            </p>
+
+            <Link href="/login">
+              <button className="mt-8 w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.01]">
+                Go to sign in
+              </button>
+            </Link>
+
+            <p className="mt-4 text-xs text-white/40">
+              Didn&apos;t receive the email? Check your spam folder.
+            </p>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -142,9 +182,7 @@ export default function SignupPage() {
                 className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm outline-none placeholder:text-white/40"
               />
               {submitted && !phoneIsValid && (
-                <p className="mt-2 text-xs text-red-400">
-                  Enter a valid phone number.
-                </p>
+                <p className="mt-2 text-xs text-red-400">Enter a valid phone number.</p>
               )}
             </div>
 
@@ -167,7 +205,7 @@ export default function SignupPage() {
             <div>
               <input
                 type="password"
-                placeholder="Password"
+                placeholder="Password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm outline-none placeholder:text-white/40"
@@ -208,6 +246,12 @@ export default function SignupPage() {
               <p className="text-xs text-red-400">
                 You must confirm that you are 18+.
               </p>
+            )}
+
+            {error && (
+              <div className="rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {error}
+              </div>
             )}
 
             <button

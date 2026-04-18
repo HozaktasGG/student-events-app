@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/lib/useAuth"
+import EventModal, { EventRow } from "@/components/EventModal"
 import {
   CalendarDays,
   MapPin,
@@ -9,73 +12,80 @@ import {
   Search,
   Settings,
   User,
-  Users,
   LogOut,
 } from "lucide-react"
 
-const featuredEvents = [
-  {
-    id: 1,
-    title: "Erasmus Rooftop Night",
-    date: "20 March",
-    location: "Turin",
-    genre: "Afro House",
-    type: "Rooftop Party",
-    attendees: 84,
-    organizer: "BelongTo",
-    price: "€12",
-    image:
-      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 2,
-    title: "N'DIONIA Afro Session",
-    date: "22 March",
-    location: "Milan",
-    genre: "Afro House",
-    type: "Club Event",
-    attendees: 126,
-    organizer: "N'DIONIA",
-    price: "€18",
-    image:
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 3,
-    title: "International House Party",
-    date: "24 March",
-    location: "Bologna",
-    genre: "Commercial House",
-    type: "House Party",
-    attendees: 57,
-    organizer: "ErasmusLife",
-    price: "Free",
-    image:
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
-  },
-]
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80"
+
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "long" })
+  } catch {
+    return dateStr
+  }
+}
+
+function formatPrice(price: number) {
+  if (!price) return "Free"
+  return `€${price}`
+}
 
 export default function HomePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [userName, setUserName] = useState("")
+  const { user, profile, loading, isLoggedIn, signOut } = useAuth()
+
+  const [events, setEvents] = useState<EventRow[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(true)
+  const [selectedEvent, setSelectedEvent] = useState<EventRow | null>(null)
+
+  const userName =
+    profile?.first_name || user?.email?.split("@")[0] || "Profile"
 
   useEffect(() => {
-    const savedLogin = localStorage.getItem("isLoggedIn")
-    const savedName = localStorage.getItem("userName")
+    if (!isLoggedIn) return
 
-    if (savedLogin === "true") {
-      setIsLoggedIn(true)
-      setUserName(savedName || "Profile")
+    const fetchEvents = async () => {
+      setLoadingEvents(true)
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("event_date", { ascending: true })
+        .limit(6)
+
+      if (error) {
+        console.error("Error fetching events:", error.message)
+      } else if (data) {
+        setEvents(data as EventRow[])
+      }
+      setLoadingEvents(false)
     }
-  }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn")
-    localStorage.removeItem("userName")
-    localStorage.removeItem("userEmail")
-    setIsLoggedIn(false)
-    setUserName("")
+    fetchEvents()
+  }, [isLoggedIn])
+
+  const handleLogout = async () => {
+    await signOut()
     window.location.href = "/login"
+  }
+
+  const handleUpdated = (updated: EventRow) => {
+    setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+    setSelectedEvent(updated)
+  }
+
+  const handleDeleted = (id: string) => {
+    setEvents((prev) => prev.filter((e) => e.id !== id))
+    setSelectedEvent(null)
+  }
+
+  // Auth yükleniyorken bekle
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-neutral-950 text-white/60">
+        Loading…
+      </main>
+    )
   }
 
   if (!isLoggedIn) {
@@ -101,9 +111,7 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="text-lg font-semibold tracking-tight">Eventra</p>
-                <p className="text-xs text-white/70">
-                  Student nightlife discovery
-                </p>
+                <p className="text-xs text-white/70">Student nightlife discovery</p>
               </div>
             </div>
 
@@ -174,22 +182,13 @@ export default function HomePage() {
             </div>
 
             <nav className="hidden items-center gap-6 md:flex">
-              <a
-                href="#events"
-                className="text-sm text-white/75 transition hover:text-white"
-              >
+              <a href="#events" className="text-sm text-white/75 transition hover:text-white">
                 Events
               </a>
-              <Link
-                href="/profile"
-                className="text-sm text-white/75 transition hover:text-white"
-              >
+              <Link href="/profile" className="text-sm text-white/75 transition hover:text-white">
                 Profile
               </Link>
-              <Link
-                href="/settings"
-                className="text-sm text-white/75 transition hover:text-white"
-              >
+              <Link href="/settings" className="text-sm text-white/75 transition hover:text-white">
                 Settings
               </Link>
             </nav>
@@ -206,7 +205,7 @@ export default function HomePage() {
             <Link href="/profile">
               <button className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10">
                 <User size={16} />
-                {userName || "Profile"}
+                {userName}
               </button>
             </Link>
 
@@ -227,7 +226,7 @@ export default function HomePage() {
             Welcome back
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-            Hi {userName || "there"}, discover and manage your events.
+            Hi {userName}, discover and manage your events.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-white/65">
             Buradan eventlerini görüntüleyebilir, yeni event oluşturabilir ve
@@ -311,10 +310,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        id="events"
-        className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:pb-20"
-      >
+      <section id="events" className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:pb-20">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.22em] text-white/40">
@@ -324,83 +320,102 @@ export default function HomePage() {
               Popular this week
             </h2>
           </div>
-          <Link
-            href="/events"
-            className="text-sm text-white/65 underline underline-offset-4"
-          >
+          <Link href="/events" className="text-sm text-white/65 underline underline-offset-4">
             View all
           </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {featuredEvents.map((event) => (
-            <article
-              key={event.id}
-              className="overflow-hidden rounded-[30px] border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:bg-white/[0.07]"
-            >
-              <div
-                className="relative h-52 bg-cover bg-center"
-                style={{ backgroundImage: `url(${event.image})` }}
+        {loadingEvents ? (
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-12 text-center text-white/50">
+            Loading events…
+          </div>
+        ) : events.length === 0 ? (
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-12 text-center">
+            <p className="text-lg text-white/70">No events yet.</p>
+            <p className="mt-2 text-sm text-white/50">Be the first to create one!</p>
+            <Link href="/create-event">
+              <button className="mt-6 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black">
+                Create Event
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {events.map((event) => (
+              <button
+                key={event.id}
+                onClick={() => setSelectedEvent(event)}
+                className="group overflow-hidden rounded-[30px] border border-white/10 bg-white/5 text-left transition hover:-translate-y-1 hover:bg-white/[0.07]"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/70">
-                      Hosted by {event.organizer}
-                    </p>
-                    <h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">
-                      {event.title}
-                    </h3>
-                  </div>
-                  <span className="rounded-full border border-white/15 bg-black/35 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
-                    {event.price}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/65">
-                    {event.genre}
-                  </span>
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/65">
-                    {event.type}
-                  </span>
-                </div>
-
-                <div className="space-y-3 text-sm text-white/60">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4" />
-                    <span>{event.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>{event.location}</span>
+                <div
+                  className="relative h-52 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${event.image_url || FALLBACK_IMAGE})` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
+                    <div>
+                      {event.organizer && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/70">
+                          Hosted by {event.organizer}
+                        </p>
+                      )}
+                      <h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+                        {event.title}
+                      </h3>
+                    </div>
+                    <span className="rounded-full border border-white/15 bg-black/35 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+                      {formatPrice(event.price)}
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                  <div className="flex items-center gap-2 text-sm text-white/70">
-                    <Users className="h-4 w-4" />
-                    <span>{event.attendees} people going</span>
+                <div className="p-6">
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/65">
+                      {event.activity_type}
+                    </span>
+                    {event.category && (
+                      <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/65">
+                        {event.category}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 text-sm text-white/60">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4" />
+                      <span>
+                        {formatDate(event.event_date)} • {event.event_time?.slice(0, 5)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>
+                        {event.city}
+                        {event.location ? ` — ${event.location}` : ""}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-2xl bg-white/5 px-4 py-3 text-center text-sm font-medium text-white/80 transition group-hover:bg-white/10">
+                    Tap to view details →
                   </div>
                 </div>
-
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <Link href={`/events/${event.id}`}>
-                    <button className="w-full rounded-2xl border border-white/15 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/5">
-                      View Event
-                    </button>
-                  </Link>
-                  <button className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:scale-[1.01]">
-                    Join Event
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
+
+      {selectedEvent && (
+        <EventModal
+          event={selectedEvent}
+          currentUserId={user?.id ?? null}
+          onClose={() => setSelectedEvent(null)}
+          onUpdated={handleUpdated}
+          onDeleted={handleDeleted}
+        />
+      )}
     </main>
   )
 }
